@@ -1,6 +1,7 @@
 import tensorflow
+from tensorflow.keras.layers import Input, Dense, LSTM, Embedding
 
-def seq_network(train, test):
+def autoencoder_network(train, test):
     model = tf.keras.Sequential()
     model.add(Input(shape=(train.shape[1], )))
     model.add(Dense(encoding_dim, activation="tanh"))
@@ -16,3 +17,14 @@ def seq_network(train, test):
                         shuffle=True,
                         validation_data=(test, test),
                         verbose=1)
+
+def lstm_network():
+    model = tf.keras.Sequential()
+    # model.add(Embedding(input_dim=1000, output_dim=64))
+    # model.add(LSTM(128))
+    # model.add(Dense(10))
+    pass
+
+def transformer_network():
+    model = tf.keras.Sequential()
+    pass
