@@ -13,7 +13,7 @@ def get_csv_data(filepath):
         for col in row: 
             print("%10s"%col), 
         print('\n') 
-    return fields, rows
+    return np.array(fields), np.array(rows)
 
 def preprocess_cred_crd(filepath):
     _, data = get_csv_data(filepath)
