@@ -1,8 +1,11 @@
 import csv
 
 def get_csv_data(filepath):
+    fields = [] 
+    rows = [] 
     with open(filepath, 'r') as csvfile
         csvreader = csv.reader(csvfile)
+        fields = next(csvreader) 
         for row in csvreader: 
             rows.append(row)
     print("Total no. of rows: %d"%(csvreader.line_num))
