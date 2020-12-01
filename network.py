@@ -11,7 +11,7 @@ def autoencoder_network(train, test):
     model.compile(optimizer='adam', 
                         loss='mean_squared_error', 
                         metrics=['accuracy'])
-    model.fit(train, test,
+    model.fit(train, train,
                         epochs=100,
                         batch_size=32,
                         shuffle=True,
