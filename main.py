@@ -23,8 +23,8 @@ def main():
 	if network_type == "A":
 		autoencoder_network(traindata, testdata, testlabels)
 	elif network_type == "L":
-		train_inputs, train_labels = preprocess_cred_crd_seq(cred_crd_filepath)
-		lstm_network(train_inputs, train_labels)
+		traininputs, trainlabels, testinputs, testlabels = preprocess_cred_crd_seq(cred_crd_filepath)
+		lstm_network(traininputs, trainlabels)
 	elif network_type == "T":
 		transformer_network(traindata, testdata)
 	else:

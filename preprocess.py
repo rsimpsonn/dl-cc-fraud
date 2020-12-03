@@ -34,6 +34,22 @@ def preprocess_cred_crd(filepath):
 
     return traindata.to_numpy(dtype=np.float32), testdata.to_numpy(dtype=np.float32), testlabels.to_numpy(dtype=np.float32)
 
+def preprocess_cred_crd_seq(filepath):
+
+    trans = pd.read_csv(filepath, na_filter=True)
+    labels = trans['Class']
+    trans = trans.drop(['Class'], axis=1)
+    trans = trans.drop(['Time'], axis=1)
+
+    rolling_window_size = 10
+
+    windows = np.array([np.array(trans[i:i + rolling_window_size]) for i in range(len(trans) - rolling_window_size)])
+    window_labels = labels[rolling_window_size:]
+
+    offset = int(len(windows) * 0.7)
+
+    return windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
+
 def preprocess_sim_cred_crd(trainpath, testpath):
     _, traindata = get_csv_data(trainpath)
     _, testdata = get_csv_data(testpath)
@@ -47,4 +63,4 @@ def preprocess_together(filepath, trainpath, testpath):
     pass
 
 
-preprocess_cred_crd("data/creditcard.csv")
+preprocess_cred_crd_seq("data/creditcard.csv")
