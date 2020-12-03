@@ -41,12 +41,12 @@ def autoencoder_network(train, test, labels):
     plt.xlabel('Predictions')
     plt.show()
 
-def lstm_network():
-    model = tf.keras.Sequential()
-    # model.add(Embedding(input_dim=1000, output_dim=64))
-    # model.add(LSTM(128))
-    # model.add(Dense(10))
-    pass
+def lstm_network(train_inputs, train_labels):
+    model = Sequential()
+    model.add(LSTM(20, input_shape=X_train.shape[1:], activation='relu', dropout=0.2, recurrent_dropout=0.2))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.fit(train_inputs, train_labels, epochs=200, batch_size=10000, class_weight={0 : 1., 1: float(int(1/np.mean(train_labels)))}, validation_split=0.3)
 
 def transformer_network():
     model = tf.keras.Sequential()
