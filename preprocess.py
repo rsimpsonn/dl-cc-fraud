@@ -27,7 +27,9 @@ def preprocess_cred_crd(filepath):
     df = pd.read_csv("data/creditcard.csv")
     data = df.drop(['Time'], axis=1)
 
+    print(data['Amount'])
     data['Amount'] = StandardScaler().fit_transform(data['Amount'].values.reshape(-1, 1))
+    print(data['Amount'])
     X_train, X_test = train_test_split(data, test_size=0.2, random_state=42)
     X_train = X_train[X_train.Class == 0]
     X_train = X_train.drop(['Class'], axis=1)
