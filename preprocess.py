@@ -41,7 +41,7 @@ def preprocess_cred_crd_seq(filepath):
     trans = trans.drop(['Class'], axis=1)
     trans = trans.drop(['Time'], axis=1)
 
-    rolling_window_size = 10
+    rolling_window_size = 75
 
     windows = np.array([np.array(trans[i:i + rolling_window_size]) for i in range(len(trans) - rolling_window_size)])
     window_labels = labels[rolling_window_size:]
