@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, LSTM, Embedding
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_curve, auc
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -18,7 +18,7 @@ def autoencoder_network(train, test, labels):
                         loss='mean_squared_error', 
                         metrics=['accuracy'])
     model.fit(train, train,
-                        epochs=1,
+                        epochs=100,
                         batch_size=32,
                         shuffle=True,
                         validation_data=(test, test),
@@ -27,7 +27,12 @@ def autoencoder_network(train, test, labels):
 
     # Based on paper, we used a confusion matrix to visualize accuracy
     predictions = model.predict(test)
+    #print(predictions)
     mean_squared_error = np.mean(np.power(test - predictions, 2), axis=1)
+
+    plt.scatter(mean_squared_error, np.array(labels))
+    plt.show()
+    plt.clf()
 
     y_pred = [1 if e > 3 else 0 for e in mean_squared_error]
     confusion = confusion_matrix(labels, y_pred)
@@ -41,12 +46,42 @@ def autoencoder_network(train, test, labels):
     plt.xlabel('Predictions')
     plt.show()
 
-def lstm_network(train_inputs, train_labels):
-    model = Sequential()
-    model.add(LSTM(20, input_shape=X_train.shape[1:], activation='relu', dropout=0.2, recurrent_dropout=0.2))
+def lstm_network(train_inputs, train_labels, test_inputs, test_labels):
+    model = tf.keras.Sequential()
+    model.add(LSTM(20, input_shape=train_inputs.shape[1:], activation='relu', dropout=0.2, recurrent_dropout=0.2))
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(train_inputs, train_labels, epochs=200, batch_size=10000, class_weight={0 : 1., 1: float(int(1/np.mean(train_labels)))}, validation_split=0.3)
+    model.fit(train_inputs, train_labels, epochs=100, batch_size=10000, class_weight={0 : 1., 1: float(int(1/np.mean(train_labels)))}, validation_split=0.3)
+
+    predictions = model.predict(test_inputs)
+
+    fpr, tpr, thresholds = roc_curve(train_labels, model.predict(train_inputs), pos_label=1)
+    print('TRAIN | AUC Score: ' + str((auc(fpr, tpr))))
+    fpr, tpr, thresholds = roc_curve(test_labels, predictions, pos_label=1)
+    print('TEST | AUC Score: ' + str((auc(fpr, tpr))))
+
+    plt.scatter(np.squeeze(predictions), np.array(test_labels))
+    plt.show()
+    plt.clf()
+
+    for i in range(40, 50):
+        print(i)
+        y_pred = [1 if e > (i / 100) else 0 for e in np.squeeze(predictions)]
+        confusion = confusion_matrix(test_labels, y_pred)
+
+        data_labels = ["Valid", "Fraudulent"]
+
+        plt.figure(figsize=(12, 12))
+        sns.heatmap(confusion, xticklabels=data_labels, yticklabels=data_labels, annot=True, fmt="d");
+        plt.title("Confusion matrix")
+        plt.ylabel('Labels')
+        plt.xlabel('Predictions')
+        plt.show()
+
+    #mean_squared_error = np.mean(np.power(test_labels - np.squeeze(predictions), 2))
+
+    #y_pred = [1 if e > 3 else 0 for e in mean_squared_error]
+
 
 def transformer_network():
     model = tf.keras.Sequential()

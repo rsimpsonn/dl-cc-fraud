@@ -1,5 +1,5 @@
 import sys
-from preprocess import preprocess_cred_crd, preprocess_sim_cred_crd 
+from preprocess import preprocess_cred_crd, preprocess_sim_cred_crd, preprocess_cred_crd_seq
 from network import autoencoder_network, lstm_network, transformer_network
 
 cred_crd_filepath = "data/creditcard.csv"
@@ -24,7 +24,7 @@ def main():
 		autoencoder_network(traindata, testdata, testlabels)
 	elif network_type == "L":
 		traininputs, trainlabels, testinputs, testlabels = preprocess_cred_crd_seq(cred_crd_filepath)
-		lstm_network(traininputs, trainlabels)
+		lstm_network(traininputs, trainlabels, testinputs, testlabels)
 	elif network_type == "T":
 		transformer_network(traindata, testdata)
 	else:
