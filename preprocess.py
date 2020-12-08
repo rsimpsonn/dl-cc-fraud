@@ -58,11 +58,29 @@ def preprocess_cred_crd_seq(filepath):
 
     return windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
 
-def preprocess_sim_cred_crd(trainpath, testpath):
-    _, traindata = get_csv_data(trainpath)
-    _, testdata = get_csv_data(testpath)
-    print(traindata)
-    return traindata, testdata
+def gen_normalized_sim_data():
+    df = pd.read_csv("data/fraudTrain.csv")
+    data = df.drop(df.columns[0], axis=1)
+    data = data.assign(ind=(df['first'] + '_' + df['last']).astype('category').cat.codes)
+    data = data.assign(mer=(df['merchant']).astype('category').cat.codes)
+    data = data.assign(cc=(df['cc_num']).astype('category').cat.codes)
+    data = data.assign(cat=(df['category']).astype('category').cat.codes)
+    data = data.assign(gen=(df['gender']).astype('category').cat.codes)
+    data = data.assign(str=(df['street']).astype('category').cat.codes)
+    data = data.assign(city=(df['city']).astype('category').cat.codes)
+    data = data.assign(st=(df['state']).astype('category').cat.codes)
+    data = data.assign(zcode=(df['zip']).astype('category').cat.codes)
+    data = data.assign(jobtype=(df['job']).astype('category').cat.codes)
+    data = data.assign(birth=(df['dob']).astype('category').cat.codes)
+
+    data['time'] = pd.to_datetime(data['trans_date_trans_time'])
+    first_trans = data.iloc[0]
+    data['time'] = data['time'].apply(lambda x: (x - first_trans['time']).total_seconds())
+
+    data = data.drop(['first', 'last', 'unix_time', 'trans_date_trans_time', 'category', 'gender', 'street', 'city', 'state', 'zip', 'job', 'dob', 'trans_num', 'merchant', 'cc_num'], axis=1)
+
+    data.to_csv('data/fraudTrainNormalized.csv')
+
 
 def preprocess_together(filepath, trainpath, testpath):
     _, data = get_csv_data(filepath)
@@ -71,4 +89,4 @@ def preprocess_together(filepath, trainpath, testpath):
     pass
 
 
-preprocess_cred_crd_seq("data/creditcard.csv")
+gen_normalized_sim_data()

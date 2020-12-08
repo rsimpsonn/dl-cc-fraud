@@ -173,8 +173,8 @@ print('TEST | AUC Score: ' + str((metrics.auc(fpr, tpr))))
 
 print(test_predict)
 
-for i in range(10):
-    y_pred = [1 if e > (i / 10) else 0 for e in test_predict]
+for i in range(40, 60):
+    y_pred = [1 if e > (i / 100) else 0 for e in test_predict]
     confusion = confusion_matrix(y_test, y_pred)
 
     data_labels = ["Valid", "Fraudulent"]
