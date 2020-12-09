@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 import pandas as pd
+import os
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -58,11 +59,51 @@ def preprocess_cred_crd_seq(filepath):
 
     return windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
 
-def preprocess_sim_cred_crd(trainpath, testpath):
-    _, traindata = get_csv_data(trainpath)
-    _, testdata = get_csv_data(testpath)
-    print(traindata)
-    return traindata, testdata
+def gen_normalized_sim_data(inf, out):
+    df = pd.read_csv(inf)
+    data = df.drop(df.columns[0], axis=1)
+    data = data.assign(ind=(df['first'] + '_' + df['last']).astype('category').cat.codes)
+    data = data.assign(mer=(df['merchant']).astype('category').cat.codes)
+    data = data.assign(cc=(df['cc_num']).astype('category').cat.codes)
+    data = data.assign(cat=(df['category']).astype('category').cat.codes)
+    data = data.assign(gen=(df['gender']).astype('category').cat.codes)
+    data = data.assign(str=(df['street']).astype('category').cat.codes)
+    data = data.assign(city=(df['city']).astype('category').cat.codes)
+    data = data.assign(st=(df['state']).astype('category').cat.codes)
+    data = data.assign(zcode=(df['zip']).astype('category').cat.codes)
+    data = data.assign(jobtype=(df['job']).astype('category').cat.codes)
+    data = data.assign(birth=(df['dob']).astype('category').cat.codes)
+
+    data['time'] = pd.to_datetime(data['trans_date_trans_time'])
+    first_trans = data.iloc[0]
+    data['time'] = data['time'].apply(lambda x: (x - first_trans['time']).total_seconds())
+
+    data = data.drop(['first', 'last', 'unix_time', 'trans_date_trans_time', 'category', 'gender', 'street', 'city', 'state', 'zip', 'job', 'dob', 'trans_num', 'merchant', 'cc_num'], axis=1)
+
+    data.to_csv(out)
+
+def preprocess_cred_crd_sim():
+    if not(os.path.isfile("data/fraudTrainNormalized.csv")):
+        gen_normalized_sim_data("data/fraudTrain.csv", "data/fraudTrainNormalized.csv")
+
+    if not(os.path.isfile("data/fraudTestNormalized.csv")):
+        gen_normalized_sim_data("data/fraudTest.csv", "data/fraudTestNormalized.csv")
+
+
+def preprocess_normalized_sim_lstm(filepath):
+
+    df = pd.read_csv(filepath, na_filter=True)
+    df = df.sort_values(by=["ind"])["ind"]
+
+    rolling_window_size = 40
+
+    windows = np.array([np.array(df[i:i + rolling_window_size]) for i in range(len(df) - rolling_window_size)])
+    window_labels = labels[rolling_window_size:]
+
+    offset = int(len(windows) * 0.7)
+    split = windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
+    return split
+
 
 def preprocess_together(filepath, trainpath, testpath):
     _, data = get_csv_data(filepath)
@@ -70,5 +111,5 @@ def preprocess_together(filepath, trainpath, testpath):
     _, testdata = get_csv_data(testpath)
     pass
 
-
-preprocess_cred_crd_seq("data/creditcard.csv")
+preprocess_normalized_sim_lstm("data/new.csv")
+# gen_normalized_sim_data("data/fraudTrain.csv", "data/new.csv")
