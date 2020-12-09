@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import os
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
 
 '''def get_csv_data(filepath):
@@ -68,7 +68,7 @@ def gen_normalized_sim_data(inf, out):
     data = data.assign(cat=(df['category']).astype('category').cat.codes)
     data = data.assign(gen=(df['gender']).astype('category').cat.codes)
     data = data.assign(str=(df['street']).astype('category').cat.codes)
-    data = data.assign(city=(df['city']).astype('category').cat.codes)
+    data = data.assign(ct=(df['city']).astype('category').cat.codes)
     data = data.assign(st=(df['state']).astype('category').cat.codes)
     data = data.assign(zcode=(df['zip']).astype('category').cat.codes)
     data = data.assign(jobtype=(df['job']).astype('category').cat.codes)
@@ -80,16 +80,76 @@ def gen_normalized_sim_data(inf, out):
 
     data = data.drop(['first', 'last', 'unix_time', 'trans_date_trans_time', 'category', 'gender', 'street', 'city', 'state', 'zip', 'job', 'dob', 'trans_num', 'merchant', 'cc_num'], axis=1)
 
-    data.to_csv(out)
+    min_max_scaler = MinMaxScaler()
 
-def preprocess_cred_crd_sim():
+    data['ind'] = min_max_scaler.fit_transform(data[['ind']].values)
+    data['long'] = min_max_scaler.fit_transform(data[['long']].values)
+    data['lat'] = min_max_scaler.fit_transform(data[['lat']].values)
+    data['cc'] = min_max_scaler.fit_transform(data[['cc']].values)
+    data['mer'] = min_max_scaler.fit_transform(data[['mer']].values)
+    data['cat'] = min_max_scaler.fit_transform(data[['cat']].values)
+    data['gen'] = min_max_scaler.fit_transform(data[['gen']].values)
+    data['str'] = min_max_scaler.fit_transform(data[['str']].values)
+    data['ct'] = min_max_scaler.fit_transform(data[['ct']].values)
+    data['st'] = min_max_scaler.fit_transform(data[['st']].values)
+    data['zcode'] = min_max_scaler.fit_transform(data[['zcode']].values)
+    data['jobtype'] = min_max_scaler.fit_transform(data[['jobtype']].values)
+    data['birth'] = min_max_scaler.fit_transform(data[['birth']].values)
+    data['merch_lat'] = min_max_scaler.fit_transform(data[['merch_lat']].values)
+    data['merch_long'] = min_max_scaler.fit_transform(data[['merch_long']].values)
+    data['city_pop'] = min_max_scaler.fit_transform(data[['city_pop']].values)
+
+    data.to_csv(out, index=False)
+
+def preprocess_cred_crd_sim(train, test):
     if not(os.path.isfile("data/fraudTrainNormalized.csv")):
-        gen_normalized_sim_data("data/fraudTrain.csv", "data/fraudTrainNormalized.csv")
+        gen_normalized_sim_data(train, "data/fraudTrainNormalized.csv")
 
     if not(os.path.isfile("data/fraudTestNormalized.csv")):
-        gen_normalized_sim_data("data/fraudTest.csv", "data/fraudTestNormalized.csv")
+        gen_normalized_sim_data(test, "data/fraudTestNormalized.csv")
+
+    train_data = pd.read_csv("data/fraudTrainNormalized.csv")
+    train_data = train_data.drop(train_data.columns[0], axis=1)
+
+    train_data = train_data.drop(['time'], axis=1)
+
+    train_data['amt'] = StandardScaler().fit_transform(train_data['amt'].values.reshape(-1, 1))
+    train_data = train_data.drop(['is_fraud'], axis=1)
+
+    test_data = pd.read_csv("data/fraudTestNormalized.csv")
+    test_data = test_data.drop(test_data.columns[0], axis=1)
+
+    test_data = test_data.drop(['time'], axis=1)
+    test_labels = test_data['is_fraud']
+
+    test_data['amt'] = StandardScaler().fit_transform(test_data['amt'].values.reshape(-1, 1))
+    test_data = test_data.drop(['is_fraud'], axis=1)
+
+    #print(train_data.columns)
+
+    #print(test_data.head())
+
+    #print(train_data.values.shape)
+
+    return train_data.values, test_data.values, test_labels.values
+
+def preprocess_normalized_sim_lstm(filepath):
+    df = pd.read_csv(filepath, na_filter=True)
+    df = df.sort_values(by=["ind"])
+
+    for index, row in df.iterrows():
+        if row
+
+    print(df[df.ind > 0.20]['ind'])
+    rolling_window_size = 40
+    windows = np.array([np.array(df[i:i + rolling_window_size]) for i in range(len(df) - rolling_window_size)])
+    window_labels = labels[rolling_window_size:]
+    offset = int(len(windows) * 0.7)
+    split = windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
+    return split
 
 
+##preprocess_normalized_sim_lstm("data/fraudTestNormalized.csv")
 
 
 def preprocess_together(filepath, trainpath, testpath):
@@ -97,6 +157,3 @@ def preprocess_together(filepath, trainpath, testpath):
     _, traindata = get_csv_data(trainpath)
     _, testdata = get_csv_data(testpath)
     pass
-
-
-gen_normalized_sim_data()
