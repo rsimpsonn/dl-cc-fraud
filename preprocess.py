@@ -81,10 +81,9 @@ def gen_normalized_sim_data(inf, out):
     data = data.drop(['first', 'last', 'unix_time', 'trans_date_trans_time', 'category', 'gender', 'street', 'city', 'state', 'zip', 'job', 'dob', 'trans_num', 'merchant', 'cc_num'], axis=1)
 
     min_max_scaler = MinMaxScaler()
-
     data['ind'] = min_max_scaler.fit_transform(data[['ind']].values)
-    data['long'] = min_max_scaler.fit_transform(data[['long']].values)
-    data['lat'] = min_max_scaler.fit_transform(data[['lat']].values)
+    data['long'] = StandardScaler().fit_transform(data['long'].values.reshape(-1, 1))
+    data['lat'] = StandardScaler().fit_transform(data['lat'].values.reshape(-1, 1))
     data['cc'] = min_max_scaler.fit_transform(data[['cc']].values)
     data['mer'] = min_max_scaler.fit_transform(data[['mer']].values)
     data['cat'] = min_max_scaler.fit_transform(data[['cat']].values)
@@ -95,9 +94,9 @@ def gen_normalized_sim_data(inf, out):
     data['zcode'] = min_max_scaler.fit_transform(data[['zcode']].values)
     data['jobtype'] = min_max_scaler.fit_transform(data[['jobtype']].values)
     data['birth'] = min_max_scaler.fit_transform(data[['birth']].values)
-    data['merch_lat'] = min_max_scaler.fit_transform(data[['merch_lat']].values)
-    data['merch_long'] = min_max_scaler.fit_transform(data[['merch_long']].values)
-    data['city_pop'] = min_max_scaler.fit_transform(data[['city_pop']].values)
+    data['merch_lat'] = StandardScaler().fit_transform(data['merch_lat'].values.reshape(-1, 1))
+    data['merch_long'] = StandardScaler().fit_transform(data['merch_long'].values.reshape(-1, 1))
+    data['city_pop'] = StandardScaler().fit_transform(data['city_pop'].values.reshape(-1, 1))
 
     data.to_csv(out, index=False)
 
@@ -109,20 +108,22 @@ def preprocess_cred_crd_sim(train, test):
         gen_normalized_sim_data(test, "data/fraudTestNormalized.csv")
 
     train_data = pd.read_csv("data/fraudTrainNormalized.csv")
-    train_data = train_data.drop(train_data.columns[0], axis=1)
+    #train_data = train_data.drop(train_data.columns[0], axis=1)
 
     train_data = train_data.drop(['time'], axis=1)
 
     train_data['amt'] = StandardScaler().fit_transform(train_data['amt'].values.reshape(-1, 1))
+    train_data = train_data[train_data.is_fraud == 0]
     train_data = train_data.drop(['is_fraud'], axis=1)
 
     test_data = pd.read_csv("data/fraudTestNormalized.csv")
-    test_data = test_data.drop(test_data.columns[0], axis=1)
+    #test_data = test_data.drop(test_data.columns[0], axis=1)
 
     test_data = test_data.drop(['time'], axis=1)
     test_labels = test_data['is_fraud']
 
     test_data['amt'] = StandardScaler().fit_transform(test_data['amt'].values.reshape(-1, 1))
+
     test_data = test_data.drop(['is_fraud'], axis=1)
 
     #print(train_data.columns)
@@ -133,7 +134,7 @@ def preprocess_cred_crd_sim(train, test):
 
     return train_data.values, test_data.values, test_labels.values
 
-def preprocess_normalized_sim_lstm(filepath):
+'''def preprocess_normalized_sim_lstm(filepath):
     df = pd.read_csv(filepath, na_filter=True)
     df = df.sort_values(by=["ind"])
 
@@ -146,7 +147,7 @@ def preprocess_normalized_sim_lstm(filepath):
     window_labels = labels[rolling_window_size:]
     offset = int(len(windows) * 0.7)
     split = windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
-    return split
+    return split'''
 
 
 ##preprocess_normalized_sim_lstm("data/fraudTestNormalized.csv")
