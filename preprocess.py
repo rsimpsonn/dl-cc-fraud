@@ -136,38 +136,35 @@ def preprocess_cred_crd_sim(train, test):
 def preprocess_normalized_sim_lstm(filepath):
     df = pd.read_csv(filepath, na_filter=True)
     df = df.sort_values(by=["ind"])
-
+    rolling_window_size = 40
     pre = []
     windows = []
     for index, row in df.iterrows():
-        if len(pre) == 0 or pre.last()['ind'] == row['ind']:
+        if len(pre) == 0 or pre[-1]['ind'] == row['ind']:
             pre.append(row)
         if (len(pre) == rolling_window_size):
-            windows.append(np.array([x.values() for x in pre]))
+            b = np.array([x.values for x in pre])
+            # print(b.shape)
+            windows.append(b)
             pre = []
+        if len(pre) != 0 and pre[-1]['ind'] != row['ind']:
+            pre = []
+            pre.append(row)
+    print(np.array(windows).shape)
+    return np.array(windows)
+
+    # windows = np.array([np.array(df[i:i + rolling_window_size]) for i in range(len(df) - rolling_window_size)])
+    # window_labels = labels[rolling_window_size:]
+    # offset = int(len(windows) * 0.7)
+    # split = windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
+    # return split
 
 
-    print(df[df.ind > 0.20]['ind'])
-    rolling_window_size = 40
-    windows = np.array([np.array(df[i:i + rolling_window_size]) for i in range(len(df) - rolling_window_size)])
-    window_labels = labels[rolling_window_size:]
-    offset = int(len(windows) * 0.7)
-    split = windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
-    return split
-
-
-##preprocess_normalized_sim_lstm("data/fraudTestNormalized.csv")
+#preprocess_normalized_sim_lstm("data/new.csv")
 
 
 def preprocess_together(filepath, trainpath, testpath):
     _, data = get_csv_data(filepath)
     _, traindata = get_csv_data(trainpath)
     _, testdata = get_csv_data(testpath)
-<<<<<<< HEAD
     pass
-
-preprocess_normalized_sim_lstm("data/new.csv")
-# gen_normalized_sim_data("data/fraudTrain.csv", "data/new.csv")
-=======
-    pass
->>>>>>> ef559fdee92c9395d6c3fc66bae13641b07a5a91
