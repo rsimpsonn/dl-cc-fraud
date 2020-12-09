@@ -2,6 +2,9 @@ import csv
 import numpy as np
 import pandas as pd
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
 '''def get_csv_data(filepath):
     fields = [] 
     rows = [] 
@@ -21,18 +24,23 @@ import pandas as pd
     return np.array(fields), np.array(rows, dtype=np.float32)'''
 
 def preprocess_cred_crd(filepath):
-    trans = pd.read_csv(filepath)
-    trans = trans.drop(['Time'], axis=1)
-    offset = int(len(trans) * 0.7)
-    traindata = trans.loc[:offset, :]
-    traindata = traindata[traindata['Class'] == 0]
-    traindata = traindata.drop(['Class'], axis=1)
-    testdata = trans.loc[offset:, :]
+    df = pd.read_csv("data/creditcard.csv")
+    data = df.drop(['Time'], axis=1)
 
-    testlabels = testdata['Class']
-    testdata = testdata.drop(['Class'], axis=1)
+    print(data['Amount'])
+    data['Amount'] = StandardScaler().fit_transform(data['Amount'].values.reshape(-1, 1))
+    print(data['Amount'])
+    X_train, X_test = train_test_split(data, test_size=0.2, random_state=42)
+    X_train = X_train[X_train.Class == 0]
+    X_train = X_train.drop(['Class'], axis=1)
 
-    return traindata.to_numpy(dtype=np.float32), testdata.to_numpy(dtype=np.float32), testlabels.to_numpy(dtype=np.float32)
+    y_test = X_test['Class']
+    X_test = X_test.drop(['Class'], axis=1)
+
+    X_train = X_train.values
+    X_test = X_test.values
+
+    return X_train, X_test, y_test
 
 def preprocess_cred_crd_seq(filepath):
 
@@ -41,7 +49,7 @@ def preprocess_cred_crd_seq(filepath):
     trans = trans.drop(['Class'], axis=1)
     trans = trans.drop(['Time'], axis=1)
 
-    rolling_window_size = 75
+    rolling_window_size = 40
 
     windows = np.array([np.array(trans[i:i + rolling_window_size]) for i in range(len(trans) - rolling_window_size)])
     window_labels = labels[rolling_window_size:]
