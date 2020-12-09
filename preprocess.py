@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 import pandas as pd
+import os
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -58,8 +59,8 @@ def preprocess_cred_crd_seq(filepath):
 
     return windows[:offset], window_labels[:offset], windows[offset:], window_labels[offset:]
 
-def gen_normalized_sim_data():
-    df = pd.read_csv("data/fraudTrain.csv")
+def gen_normalized_sim_data(inf, out):
+    df = pd.read_csv(inf)
     data = df.drop(df.columns[0], axis=1)
     data = data.assign(ind=(df['first'] + '_' + df['last']).astype('category').cat.codes)
     data = data.assign(mer=(df['merchant']).astype('category').cat.codes)
@@ -79,7 +80,16 @@ def gen_normalized_sim_data():
 
     data = data.drop(['first', 'last', 'unix_time', 'trans_date_trans_time', 'category', 'gender', 'street', 'city', 'state', 'zip', 'job', 'dob', 'trans_num', 'merchant', 'cc_num'], axis=1)
 
-    data.to_csv('data/fraudTrainNormalized.csv')
+    data.to_csv(out)
+
+def preprocess_cred_crd_sim():
+    if not(os.path.isfile("data/fraudTrainNormalized.csv")):
+        gen_normalized_sim_data("data/fraudTrain.csv", "data/fraudTrainNormalized.csv")
+
+    if not(os.path.isfile("data/fraudTestNormalized.csv")):
+        gen_normalized_sim_data("data/fraudTest.csv", "data/fraudTestNormalized.csv")
+
+
 
 
 def preprocess_together(filepath, trainpath, testpath):
