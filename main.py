@@ -1,5 +1,5 @@
 import sys
-from preprocess import preprocess_cred_crd, preprocess_sim_cred_crd, preprocess_cred_crd_seq
+from preprocess import preprocess_cred_crd, preprocess_cred_crd_sim, preprocess_cred_crd_seq
 from network import autoencoder_network, lstm_network, transformer_network
 
 cred_crd_filepath = "data/creditcard.csv"
@@ -13,7 +13,7 @@ def main():
 	if data_type == "EU":
 		traindata, testdata, testlabels = preprocess_cred_crd(cred_crd_filepath)
 	elif data_type == "SIM":
-		traindata, testdata = preprocess_sim_cred_crd(sim_cred_crd_trainpath, sim_cred_crd_testpath)
+		traindata, testdata, testlabels = preprocess_cred_crd_sim(sim_cred_crd_trainpath, sim_cred_crd_testpath)
 	elif data_type == "BOTH":
 		pass
 	else:

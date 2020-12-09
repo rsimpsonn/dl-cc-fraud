@@ -8,7 +8,7 @@ import seaborn as sns
 
 def autoencoder_network(train, test, labels):
     model = tf.keras.Sequential()
-    encoding_dim = 14
+    encoding_dim = 30
     model.add(Input(shape=(train.shape[1], )))
     model.add(Dense(encoding_dim, activation="tanh"))
     model.add(Dense(int(encoding_dim / 2), activation="relu"))
@@ -19,7 +19,7 @@ def autoencoder_network(train, test, labels):
                         metrics=['accuracy'])
     model.fit(train, train,
                         epochs=100,
-                        batch_size=32,
+                        batch_size=200,
                         shuffle=True,
                         validation_data=(test, test),
                         verbose=1)
@@ -88,7 +88,7 @@ def transformer_network():
     pass
 
 
-X = pd.read_csv('data/creditcard.csv', na_filter=True)
+'''X = pd.read_csv('data/creditcard.csv', na_filter=True)
 
 y_original = np.array(X['Class'], dtype='float')
 
@@ -148,8 +148,8 @@ del (X_tensor, y, stratify, test_train_split, train_idx, y_neg, y_pos)
 # BatchSize: 32,64,128,256,512 (power of 2)
 
 
-### Train LSTM using Keras 2 API ###
-model = Sequential()
+### Train LSTM using Keras 2 API ###'''
+'''model = Sequential()
 model.add(LSTM(20, input_shape=X_train.shape[1:], kernel_initializer='lecun_uniform', activation='relu', kernel_regularizer=tf.keras.regularizers.l1(0.1), recurrent_regularizer=tf.keras.regularizers.l1(0.01), bias_regularizer=None, activity_regularizer=None, dropout=0.2, recurrent_dropout=0.2))#, return_sequences=True))
 #model.add(LSTM(12, activation='relu', return_sequences=True))
 #model.add(LSTM(8, activation='relu'))
@@ -184,6 +184,6 @@ for i in range(40, 60):
     plt.title("Confusion matrix")
     plt.ylabel('Labels')
     plt.xlabel('Predictions')
-    plt.show()
+    plt.show()'''
 
 
