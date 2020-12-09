@@ -66,7 +66,7 @@ def lstm_network(train_inputs, train_labels, test_inputs, test_labels):
     model.add(LSTM(20, input_shape=train_inputs.shape[1:], activation='relu', dropout=0.2, recurrent_dropout=0.2))
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(train_inputs, train_labels, epochs=100, batch_size=10000, class_weight={0 : 1., 1: float(int(1/np.mean(train_labels)))}, validation_split=0.3)
+    model.fit(train_inputs, train_labels, verbose=1, epochs=100, batch_size=10000, class_weight={0 : 1., 1: float(int(1/np.mean(train_labels)))}, validation_split=0.3)
 
     predictions = model.predict(test_inputs)
 
@@ -109,9 +109,9 @@ y_original = np.array(X['Class'], dtype='float')
 
 X.drop(['Class'], inplace=True, axis=1)
 
-rolling_window_size = 10  ### this selects how many historical transactions should be analyzed to judge the transaction at hand -- RNN width
+rolling_window_size = 40  ### this selects how many historical transactions should be analyzed to judge the transaction at hand -- RNN width
 
-X_interim = np.zeros([(X.shape[0]-rolling_window_size)*10,30])
+X_interim = np.zeros([(X.shape[0]-rolling_window_size)* rolling_window_size,30])
 y = []
 for i in range((X.shape[0]-rolling_window_size)):
     beg = 0+i
