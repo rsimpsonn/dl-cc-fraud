@@ -1,34 +1,22 @@
 import sys
-from preprocess import preprocess_cred_crd, preprocess_cred_crd_sim, preprocess_cred_crd_seq
-from network import autoencoder_network, lstm_network, transformer_network
-
-cred_crd_filepath = "data/creditcard.csv"
-sim_cred_crd_trainpath = "data/fraudTrain.csv"
-sim_cred_crd_testpath = "data/fraudTest.csv"
+from preprocess import preprocess_eu_ae, preprocess_sim_ae, preprocess_sim_lstm
+from network import autoencoder_network, lstm_network
 
 def main():
 	network_type = sys.argv[1]
 	data_type = sys.argv[2]
-
-	if data_type == "EU":
-		traindata, testdata, testlabels = preprocess_cred_crd(cred_crd_filepath)
-	elif data_type == "SIM":
-		traindata, testdata, testlabels = preprocess_cred_crd_sim(sim_cred_crd_trainpath, sim_cred_crd_testpath)
-	elif data_type == "BOTH":
-		pass
+	if network_type == "AE" and data_type == "EU":
+		train, test, labels = preprocess_eu_ae()
+		autoencoder_network(train, test, labels)
+	elif network_type == "AE" and data_type == "SIM":
+		train, test, labels = preprocess_sim_ae()
+		autoencoder_network(train, test, labels)
+	elif network_type == "LSTM" and data_type == "SIM":
+		train_d, train_l, test_d, test_l= preprocess_sim_lstm()
+		lstm_network(train_d, train_l, test_d, test_l)
 	else:
-		print("Please put a valid data type (i.e. $ python3 main.py NETWORK_TYPE DATA_TYPE, where DATA_TYPE is either EU or SIM)")
-		return
-
-	if network_type == "A":
-		autoencoder_network(traindata, testdata, testlabels)
-	elif network_type == "L":
-		traininputs, trainlabels, testinputs, testlabels = preprocess_cred_crd_seq(cred_crd_filepath)
-		lstm_network(traininputs, trainlabels, testinputs, testlabels)
-	elif network_type == "T":
-		transformer_network(traindata, testdata)
-	else:
-		print("Please put a valid network type (i.e. $ python3 main.py NETWORK_TYPE DATA_TYPE, where DATA_TYPE is either A, L or T)")
+		cmd_line_err_message = "Please put a valid network type (i.e. $ python3 main.py NETWORK_TYPE DATA_TYPE, where NETWORK_TYPE is either AE or LSTM and DATA_TYPE is either EU or SIM"
+		print(cmd_line_err_message)
 
 if __name__ == '__main__':
     main()
