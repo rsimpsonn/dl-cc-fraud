@@ -8,7 +8,7 @@ import seaborn as sns
 
 def autoencoder_network(train, test, labels):
     model = tf.keras.Sequential()
-    encoding_dim = 14
+    encoding_dim = 10
     model.add(Input(shape=(train.shape[1], )))
     model.add(Dense(encoding_dim, activation="tanh"))
     model.add(Dense(int(encoding_dim / 2), activation="relu"))
@@ -18,7 +18,7 @@ def autoencoder_network(train, test, labels):
                         loss='mean_squared_error', 
                         metrics=['accuracy'])
     model.fit(train, train,
-                        epochs=10,
+                        epochs=20,
                         batch_size=250,
                         shuffle=True,
                         validation_data=(test, test),
@@ -45,7 +45,7 @@ def autoencoder_network(train, test, labels):
         print("Non fraud percentile " + str(i) + ": " + str(np.percentile(mean_squared_error_non_fraud, i)))
         print("Fraud percentile " + str(i) + ": " + str(np.percentile(mean_squared_error_fraud, i)))
 
-    threshold = np.percentile(mean_squared_error_fraud, 25)
+    threshold = np.percentile(mean_squared_error_non_fraud, 30)#np.percentile(mean_squared_error_fraud, 20)
     y_pred = [1 if e > threshold else 0 for e in mean_squared_error]
     confusion = confusion_matrix(labels, y_pred)
 
