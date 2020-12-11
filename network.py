@@ -4,8 +4,11 @@ from sklearn.metrics import confusion_matrix, roc_curve, auc
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+import seaborn as sns
 
 def autoencoder_network(train, test, labels):
+
+    # set encoding dim to 14 for real world data, batch size to 32, epochs to 100
     model = tf.keras.Sequential()
     encoding_dim = 10
     model.add(Input(shape=(train.shape[1], )))

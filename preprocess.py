@@ -23,7 +23,9 @@ def preprocess_eu_ae():
     df = pd.read_csv(eu_filepath)
     df = df.drop(['Time'], axis=1)
     df = normalize(df, "Amount", True)
-    train, test = train_test_split(df, test_size=0.2, random_state=42)
+    offset = int(len(df) * 0.8)
+    train = df.loc[:offset]
+    test = df.loc[offset:]
     train = train[train.Class == 0]
     train = train.drop(['Class'], axis=1)
     labels = test['Class']
@@ -135,9 +137,9 @@ def preprocess_sim_lstm():
     print(windows.shape)
     print(labels.shape)
     offset = int(len(windows) * 0.7)
-    st = pickle.open("data/lstm_data")
-    st.dump(windows[:offset], labels[:offset], windows[offset:], labels[offset:])
-    st.close()
+    #st = pickle.open("data/lstm_data")
+    #st.dump(windows[:offset], labels[:offset], windows[offset:], labels[offset:])
+    #st.close()
     return windows[:offset], labels[:offset], windows[offset:], labels[offset:]
     
     # for index, row in df.iterrows():
