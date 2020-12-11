@@ -3,6 +3,7 @@ import pandas as pd
 import os
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
+import pickle
 
 
 # --------------------------Filepaths---------------
@@ -88,22 +89,68 @@ def preprocess_sim_ae():
 
 
 def preprocess_sim_lstm():
+    if (os.path.isfile("data/lstm_data")):
+        pii = pickle.open("data/lstm_data")
+        a, b, c, d = pickle.load(pii)
+        pii.close()
+        return a, b, c, d
     df = pd.read_csv(sim_norm_train_path, na_filter=True)
     df = df.sort_values(by=["ind"])
     rolling_window_size = 40
     pre = []
     windows = []
-    for index, row in df.iterrows():
-        if len(pre) == 0 or pre[-1]['ind'] == row['ind']:
-            pre.append(row)
-        if (len(pre) == rolling_window_size):
-            b = np.array([x.values for x in pre])
-            windows.append(b)
-            pre = []
-        if len(pre) != 0 and pre[-1]['ind'] != row['ind']:
-            pre = []
-            pre.append(row)
-    return np.array(windows)
+    labels = []
+    x = []
+    for idx, row in df.iterrows():
+        # row.pop("is_fraud")
+        # print("x shape: " + str(np.array(x).shape))
+        if len(x) == 0 or x[-1]['ind'] == row['ind']:
+            x.append(row)
+        if len(x) != 0 and x[-1]['ind'] != row['ind']:
+            # print("true")
+            pre.append(x)
+            x = []
+            x.append(row)
+    for same_usr in pre:
+        if len(same_usr) >= rolling_window_size:
+            usr_windows = [same_usr[i:i+rolling_window_size] for i in range(len(same_usr) - rolling_window_size)]
+            # print(usr_windows)
+            usr_labels = [same_usr[i+rolling_window_size] for i in range(len(same_usr) - rolling_window_size)]
+            for usr_window, usr_label in zip(usr_windows, usr_labels):
+                # print(usr_window)
+                # print("DONE")
+                # print(usr_label)
+                # print("AFE")
+                xtay = []
+                for d in usr_window:
+                    w = d.copy()
+                    w.pop("is_fraud")
+                    xtay.append(w)
+                windows.append(xtay)
+                # windows.append([d.pop("is_fraud") for d in usr_window])
+                labels.append(usr_label["is_fraud"])
+    windows = np.array(windows)
+    labels = np.array(labels)
+    print("finished")
+    print(windows.shape)
+    print(labels.shape)
+    offset = int(len(windows) * 0.7)
+    st = pickle.open("data/lstm_data")
+    st.dump(windows[:offset], labels[:offset], windows[offset:], labels[offset:])
+    st.close()
+    return windows[:offset], labels[:offset], windows[offset:], labels[offset:]
+    
+    # for index, row in df.iterrows():
+    #     if len(pre) == 0 or pre[-1]['ind'] == row['ind']:
+    #         pre.append(row)
+    #     if (len(pre) == rolling_window_size + 1):
+    #         b = np.array([x.values for x in pre])
+    #         windows.append(b)
+    #         pre = []
+    #     if len(pre) != 0 and pre[-1]['ind'] != row['ind']:
+    #         pre = []
+    #         pre.append(row)
+    # return np.array(windows)
 
 
 # ---------------------Helpers-------------
