@@ -21,7 +21,7 @@ def autoencoder_network(train, test, labels):
                         loss='mean_squared_error', 
                         metrics=['accuracy'])
     model.fit(train, train,
-                        epochs=10,
+                        epochs=100,
                         batch_size=32,
                         shuffle=True,
                         validation_data=(test, test),
