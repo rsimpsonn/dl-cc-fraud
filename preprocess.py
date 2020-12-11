@@ -93,17 +93,49 @@ def preprocess_sim_lstm():
     rolling_window_size = 40
     pre = []
     windows = []
-    for index, row in df.iterrows():
-        if len(pre) == 0 or pre[-1]['ind'] == row['ind']:
-            pre.append(row)
-        if (len(pre) == rolling_window_size):
-            b = np.array([x.values for x in pre])
-            windows.append(b)
-            pre = []
-        if len(pre) != 0 and pre[-1]['ind'] != row['ind']:
-            pre = []
-            pre.append(row)
-    return np.array(windows)
+    labels = []
+    x = []
+    for idx, row in df.iterrows():
+        # row.pop("is_fraud")
+        # print("x shape: " + str(np.array(x).shape))
+        if len(x) == 0 or x[-1]['ind'] == row['ind']:
+            x.append(row)
+        if len(x) != 0 and x[-1]['ind'] != row['ind']:
+            # print("true")
+            pre.append(x)
+            x = []
+            x.append(row)
+    for same_usr in pre:
+        if len(same_usr) >= rolling_window_size + 1:
+            usr_windows = [same_usr[i:i+rolling_window_size] for i in range(len(same_usr) - rolling_window_size)]
+            # print(usr_windows)
+            usr_labels = [same_usr[i+rolling_window_size] for i in range(len(same_usr) - rolling_window_size)]
+            for usr_window, usr_label in zip(usr_windows, usr_labels):
+                print(usr_window)
+                # print("DONE")
+                # print(usr_label)
+                # print("AFE")
+                windows.append([d.pop("is_fraud") for d in usr_window])
+                labels.append(usr_label["is_fraud"])
+    windows = np.array(windows)
+    labels = np.array(labels)
+    print("finished")
+    print(windows.shape)
+    print(labels.shape)
+    offset = int(len(windows) * 0.7)
+    return windows[:offset], labels[:offset], windows[offset:], labels[offset:]
+    
+    # for index, row in df.iterrows():
+    #     if len(pre) == 0 or pre[-1]['ind'] == row['ind']:
+    #         pre.append(row)
+    #     if (len(pre) == rolling_window_size + 1):
+    #         b = np.array([x.values for x in pre])
+    #         windows.append(b)
+    #         pre = []
+    #     if len(pre) != 0 and pre[-1]['ind'] != row['ind']:
+    #         pre = []
+    #         pre.append(row)
+    # return np.array(windows)
 
 
 # ---------------------Helpers-------------
