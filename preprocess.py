@@ -89,19 +89,26 @@ def preprocess_sim_ae():
 
 
 def preprocess_sim_lstm():
-    if (os.path.isfile("data/lstm_data")):
-        pii = pickle.open("data/lstm_data")
-        a, b, c, d = pickle.load(pii)
-        pii.close()
-        return a, b, c, d
+    # if (os.path.isfile("data/lstm_data")):
+    #     pii = pickle.open("data/lstm_data")
+    #     a, b, c, d = pickle.load(pii)
+    #     pii.close()
+    #     return a, b, c, d
     df = pd.read_csv(sim_norm_train_path, na_filter=True)
+    df = df.drop(["time"], axis=1)
+    df = normalize(df, "amt", True)
+    df = df.drop(["Unnamed: 0"], axis=1)
     df = df.sort_values(by=["ind"])
     rolling_window_size = 40
     pre = []
     windows = []
     labels = []
     x = []
+    ct = 0
+    last = None
     for idx, row in df.iterrows():
+        if row["ind"] == last:
+            continue
         # row.pop("is_fraud")
         # print("x shape: " + str(np.array(x).shape))
         if len(x) == 0 or x[-1]['ind'] == row['ind']:
@@ -111,6 +118,10 @@ def preprocess_sim_lstm():
             pre.append(x)
             x = []
             x.append(row)
+        if len(x) == 60:
+            pre.append(x)
+            x = []
+            last = row["ind"]
     for same_usr in pre:
         if len(same_usr) >= rolling_window_size:
             usr_windows = [same_usr[i:i+rolling_window_size] for i in range(len(same_usr) - rolling_window_size)]
@@ -135,9 +146,10 @@ def preprocess_sim_lstm():
     print(windows.shape)
     print(labels.shape)
     offset = int(len(windows) * 0.7)
-    st = pickle.open("data/lstm_data")
-    st.dump(windows[:offset], labels[:offset], windows[offset:], labels[offset:])
-    st.close()
+    # st = pickle.open("data/lstm_data")
+    # st.dump(windows[:offset], labels[:offset], windows[offset:], labels[offset:])
+    # st.close()
+    print(labels)
     return windows[:offset], labels[:offset], windows[offset:], labels[offset:]
     
     # for index, row in df.iterrows():
