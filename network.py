@@ -9,8 +9,9 @@ import seaborn as sns
 def autoencoder_network(train, test, labels):
 
     # set encoding dim to 14 for real world data, batch size to 32, epochs to 100
+    # set encoding dim to 10 for sim data, batch size to 250, epochs to 20
     model = tf.keras.Sequential()
-    encoding_dim = 10
+    encoding_dim = 14
     model.add(Input(shape=(train.shape[1], )))
     model.add(Dense(encoding_dim, activation="tanh"))
     model.add(Dense(int(encoding_dim / 2), activation="relu"))
@@ -20,8 +21,8 @@ def autoencoder_network(train, test, labels):
                         loss='mean_squared_error', 
                         metrics=['accuracy'])
     model.fit(train, train,
-                        epochs=20,
-                        batch_size=250,
+                        epochs=10,
+                        batch_size=32,
                         shuffle=True,
                         validation_data=(test, test),
                         verbose=1)
@@ -43,7 +44,9 @@ def autoencoder_network(train, test, labels):
         print("Non fraud percentile " + str(i) + ": " + str(np.percentile(mean_squared_error_non_fraud, i)))
         print("Fraud percentile " + str(i) + ": " + str(np.percentile(mean_squared_error_fraud, i)))
 
-    threshold = np.percentile(mean_squared_error_non_fraud, 30)#np.percentile(mean_squared_error_fraud, 20)
+    # use a threshold of 0.05 for sim data
+    # use a threshold of 3 for real world data
+    threshold = 3
     y_pred = [1 if e > threshold else 0 for e in mean_squared_error]
     confusion = confusion_matrix(labels, y_pred)
 
@@ -64,7 +67,7 @@ def lstm_network(train_inputs, train_labels, test_inputs, test_labels):
     model.add(LSTM(20, input_shape=train_inputs.shape[1:], activation='relu', dropout=0.2, recurrent_dropout=0.2))
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(train_inputs, train_labels, verbose=1, epochs=100, batch_size=10000, class_weight={0 : 1., 1: float(int(1/np.mean(train_labels)))}, validation_split=0.3)
+    model.fit(train_inputs, train_labels, verbose=1, epochs=100, batch_size=10000, class_weight={0 : 1., 1: float(int(1/(np.mean(train_labels) + 0.000000001)))}, validation_split=0.3)
 
     predictions = model.predict(test_inputs)
 
